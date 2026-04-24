@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Tooltip, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { Trees, Accessibility, MapPin, AlertCircle, Loader2, Search, Filter, Navigation as LucideNavigation, X, Info, ExternalLink } from 'lucide-react';
+import { Trees, Accessibility, MapPin, AlertCircle, Loader2, Search, Filter, Navigation as LucideNavigation, X, Info, ExternalLink, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { GreenSpace } from '../types';
 import { fetchGreenSpaces } from '../services/dataService';
@@ -404,6 +404,15 @@ export default function MapPage({ theme, allSpacesExternal, initialSelectedSpace
               
               <Popup className="custom-popup">
                 <div className="p-1 w-64">
+                  {space.GÖRSEL_URL && (
+                    <img 
+                      src={space.GÖRSEL_URL} 
+                      alt={space.AD}
+                      className="w-full h-[140px] object-cover rounded-xl mb-3 shadow-sm"
+                      onError={(e) => (e.currentTarget.style.display = 'none')}
+                    />
+                  )}
+
                   <h3 className="font-display font-bold text-lg mb-2 text-gray-900 dark:text-white leading-tight">
                     {space.AD}
                   </h3>
@@ -420,6 +429,16 @@ export default function MapPage({ theme, allSpacesExternal, initialSelectedSpace
                       <div>
                         <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase">ADRES</p>
                         <p className="text-sm text-gray-700 dark:text-gray-300">{space.ADRES || 'Adres bilgisi bulunamadı.'}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-2 pt-2 border-t border-gray-100 dark:border-dark-green-800">
+                      <Clock className="w-4 h-4 text-green-600 dark:text-green-400 mt-1 flex-shrink-0" />
+                      <div>
+                        <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase transition-colors">ÇALIŞMA SAATLERİ</p>
+                        <p className="text-sm text-gray-700 dark:text-gray-300 transition-colors">
+                          {space.CALISMA_SAATLERI ? `Çalışma Saatleri: ${space.CALISMA_SAATLERI}` : 'Çalışma saatleri bilgisi bulunmuyor'}
+                        </p>
                       </div>
                     </div>
 

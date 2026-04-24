@@ -12,6 +12,8 @@ export interface GreenSpace {
   KOORDİNATLARI: string;
   lat: number;
   lng: number;
+  GÖRSEL_URL?: string;
+  CALISMA_SAATLERI?: string;
 }
 
 export interface CSVRow {
@@ -22,4 +24,6 @@ export interface CSVRow {
   "TEKERLEKLİ SANDALYE UYGUNLUK DURUMU": string;
   "TÜR"?: string;
   KOORDİNATLARI: string;
+  GÖRSEL_URL?: string;
+  CALISMA_SAATLERI?: string;
 }
