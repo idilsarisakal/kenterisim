@@ -1,0 +1,58 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap');
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Playfair Display", serif;
+  
+  --color-primary: #10b981; /* Default emerald-500 */
+  --color-primary-dark: #059669; /* Emerald-600 */
+  
+  --color-dark-green-950: #051405;
+  --color-dark-green-900: #0a240a;
+  --color-dark-green-800: #123d12;
+  --color-dark-green-700: #1a561a;
+}
+
+@layer base {
+  .dark {
+    color-scheme: dark;
+  }
+}
+
+/* Explicitly force class-based dark mode variant in Tailwind 4 */
+@variant dark (&:where(.dark, .dark *));
+
+body {
+  @apply transition-colors duration-300;
+}
+
+.dark body {
+  @apply bg-dark-green-950 text-white antialiased;
+}
+
+/* Custom Marker Styling for Tree Icon */
+.custom-tree-icon {
+  background: transparent;
+  border: none;
+}
+
+/* Leaflet Map Height */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  border-radius: 1rem;
+}
+
+/* Dark Map Popup Styling */
+.dark .leaflet-popup-content-wrapper,
+.dark .leaflet-popup-tip {
+  background: #0a240a !important;
+  color: white !important;
+}
+
+.dark .leaflet-popup-content-wrapper {
+  border: 1px solid #1a561a;
+}
+
