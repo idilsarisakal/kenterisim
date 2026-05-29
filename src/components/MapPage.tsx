@@ -2,23 +2,61 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Tooltip, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { Trees, Accessibility, MapPin, AlertCircle, Loader2, Search, Filter, Navigation as LucideNavigation, X, Info, ExternalLink, Clock } from 'lucide-react';
+import { Trees, Accessibility, MapPin, AlertCircle, Loader2, Search, Filter, Navigation as LucideNavigation, X, Info, ExternalLink, Clock, Zap } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { GreenSpace } from '../types';
 import { fetchGreenSpaces } from '../services/dataService';
 
 // Custom Marker Configuration
-const createTreeIcon = (isHighlighted: boolean = false) => L.divIcon({
-  html: renderToStaticMarkup(
-    <div className={`p-1 ${isHighlighted ? 'bg-orange-500 scale-125 ring-4 ring-orange-200' : 'bg-green-600'} rounded-full border-2 border-white shadow-md text-white transition-all duration-300`}>
-      <Trees className="w-5 h-5" />
-    </div>
-  ),
-  className: 'custom-tree-icon',
-  iconSize: [32, 32],
-  iconAnchor: [16, 32],
-  popupAnchor: [0, -32],
-});
+const createTreeIcon = (space: GreenSpace, isHighlighted: boolean = false) => {
+  const isAccessible = space["TEKERLEKLİ SANDALYE UYGUNLUK DURUMU"] === 'UYGUN';
+  const turLower = (space["TÜR"] || '').toLowerCase();
+  const isChargingStation = 
+    turLower.includes('akülü') || 
+    turLower.includes('akulu') || 
+    turLower.includes('şarj') || 
+    turLower.includes('sarj') ||
+    space["TÜR"] === 'Akülü Sandalye Şarj İstasyonu';
+  
+  const isServicePoint = 
+    turLower.includes('tesis') || 
+    turLower.includes('hizmet') || 
+    turLower.includes('belediye') || 
+    turLower.includes('destek');
+
+  // Custom colors from user request
+  // Yellow background for charging station: #eab308
+  // Teal/blue for service points: #0d9488
+  // Strong green for accessible: #2f7d46
+  // Red for non-accessible: #ef4444
+  const colorClass = isHighlighted 
+    ? 'bg-orange-500 scale-125 ring-4 ring-orange-200' 
+    : isChargingStation
+      ? 'bg-[#eab308]'
+      : isServicePoint
+        ? 'bg-[#0d9488]'
+        : isAccessible 
+          ? 'bg-[#2f7d46]' 
+          : 'bg-[#ef4444]';
+
+  return L.divIcon({
+    html: renderToStaticMarkup(
+      <div className={`p-1 ${colorClass} rounded-full border-2 border-white shadow-md text-white transition-all duration-300 flex items-center justify-center`}>
+        {isChargingStation ? (
+          <Zap className="w-5 h-5 fill-white text-white" />
+        ) : isServicePoint ? (
+          <Info className="w-5 h-5 text-white" />
+        ) : (
+          <Trees className="w-5 h-5" />
+        )}
+      </div>
+    ),
+    className: 'custom-tree-icon',
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -32],
+  });
+};
 
 const userIcon = L.divIcon({
   html: renderToStaticMarkup(
@@ -30,6 +68,19 @@ const userIcon = L.divIcon({
   iconSize: [32, 32],
   iconAnchor: [16, 16],
 });
+
+const getCategoryLabel = (tur: string): string => {
+  if (tur === 'Tümü') return 'Tümü';
+  const lower = tur.toLowerCase();
+  if (lower.includes('şarj') || lower.includes('sarj') || lower.includes('akülü') || lower.includes('akulu')) {
+    return 'Şarj İstasyonları';
+  }
+  if (lower === 'park') return 'Erişilebilir Parklar';
+  if (lower === 'bostan') return 'Tarihi Bostanlar';
+  if (lower === 'koru') return 'Korular & Doğal Alanlar';
+  if (lower.includes('sosyal') || lower.includes('tesis')) return 'Erişilebilir Tesisler';
+  return tur;
+};
 
 // Map Controller Component to handle programmatic movements
 interface MapControllerProps {
@@ -188,7 +239,7 @@ export default function MapPage({ theme, allSpacesExternal, initialSelectedSpace
       <div className="h-screen w-full flex items-center justify-center bg-gray-50 dark:bg-dark-green-950 pt-16 transition-colors duration-300">
         <div className="text-center">
           <Loader2 className="w-12 h-12 text-primary animate-spin mx-auto mb-4" />
-          <p className="text-gray-600 dark:text-gray-400 font-medium transition-colors">Yeşil Alanlar Yükleniyor...</p>
+          <p className="text-gray-600 dark:text-gray-400 font-medium transition-colors">Erişilebilir Noktalar Yükleniyor...</p>
         </div>
       </div>
     );
@@ -199,9 +250,9 @@ export default function MapPage({ theme, allSpacesExternal, initialSelectedSpace
       {/* Sidebar - Controls */}
       <div className="w-full md:w-96 bg-white dark:bg-dark-green-900 border-r border-gray-100 dark:border-dark-green-800 p-6 flex flex-col z-10 shadow-lg transition-all duration-300">
         <div className="mb-6">
-          <h2 className="font-display text-3xl font-bold text-gray-900 dark:text-white mb-2 transition-colors">Yeşil Rehber</h2>
+          <h2 className="font-display text-3xl font-bold text-gray-900 dark:text-white mb-2 transition-colors">KentErişim</h2>
           <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed mb-6 transition-colors">
-            İstanbul'un yeşil alanlarını keşfedin, filtreleyin ve size en yakın parkı bulun.
+            Kent genelindeki engelsiz kamusal alanları, şarj istasyonlarını ve hizmet noktalarını keşfedin, filtreleyin.
           </p>
           
           <div className="space-y-4">
@@ -211,7 +262,7 @@ export default function MapPage({ theme, allSpacesExternal, initialSelectedSpace
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Park adı veya adres ara..."
+                  placeholder="Erişilebilir alan, hizmet veya konum ara..."
                   value={searchTerm}
                   onChange={(e) => {
                     setSearchTerm(e.target.value);
@@ -258,7 +309,7 @@ export default function MapPage({ theme, allSpacesExternal, initialSelectedSpace
               {searchTerm && filteredSpaces.length === 0 && (
                 <div className="mt-2 p-3 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-xs rounded-xl flex items-center gap-2 transition-colors">
                   <AlertCircle className="w-4 h-4" />
-                  Eşleşen yeşil alan bulunamadı.
+                  Eşleşen hizmet veya alan bulunamadı.
                 </div>
               )}
             </div>
@@ -281,7 +332,7 @@ export default function MapPage({ theme, allSpacesExternal, initialSelectedSpace
                           : 'bg-gray-100 dark:bg-dark-green-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-dark-green-700'
                       }`}
                     >
-                      {tur}
+                      {getCategoryLabel(tur)}
                     </button>
                   ))}
                 </div>
@@ -324,23 +375,13 @@ export default function MapPage({ theme, allSpacesExternal, initialSelectedSpace
               className="w-full flex items-center justify-center gap-2 py-3 bg-gray-900 dark:bg-primary text-white rounded-2xl text-sm font-bold hover:bg-black dark:hover:bg-primary-dark transition-all shadow-md disabled:opacity-50"
             >
               {locating ? <Loader2 className="w-4 h-4 animate-spin" /> : <LucideNavigation className="w-4 h-4" />}
-              {locating ? "Konum Alınıyor..." : "Etrafımdaki Parkları Bul"}
+              {locating ? "Konum Alınıyor..." : "Etrafımdakileri Bul"}
             </button>
           </div>
         </div>
 
         {/* Stats / Info */}
         <div className="flex-1 overflow-y-auto pr-2 space-y-4">
-          <div className="p-4 bg-green-50 dark:bg-dark-green-800/40 rounded-2xl border border-green-100 dark:border-dark-green-700 transition-all duration-300">
-            <div className="flex items-center gap-2 mb-2">
-              <Trees className="w-4 h-4 text-green-700 dark:text-primary transition-colors" />
-              <h4 className="text-xs font-bold text-green-800 dark:text-primary uppercase tracking-wider transition-colors">İstatistikler</h4>
-            </div>
-            <p className="text-sm text-green-900 dark:text-green-50/70 transition-colors">
-              Şu an <b>{filteredSpaces.length}</b> yeşil alan görüntüleniyor.
-            </p>
-          </div>
-          
           <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-2xl border border-blue-100 dark:border-blue-800 transition-all duration-300">
              <div className="flex items-center gap-2 mb-2">
               <Info className="w-4 h-4 text-blue-700 dark:text-blue-400 transition-colors" />
@@ -370,12 +411,13 @@ export default function MapPage({ theme, allSpacesExternal, initialSelectedSpace
           zoom={13} 
           scrollWheelZoom={true}
           className={`w-full h-full ${theme === 'dark' ? 'dark-map' : ''}`}
+          style={{ backgroundColor: '#f7f8f5' }}
         >
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
             url={theme === 'dark' 
-              ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' 
-              : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'}
+              ? 'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png' 
+              : 'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png'}
           />
           
           <MapController center={[40.9926, 29.0341]} selectedSpace={selectedSpace} userLocation={userLocation} />
@@ -390,7 +432,7 @@ export default function MapPage({ theme, allSpacesExternal, initialSelectedSpace
             <Marker 
               key={`${space.AD}-${idx}`} 
               position={[space.lat, space.lng]} 
-              icon={createTreeIcon(selectedSpace?.AD === space.AD && selectedSpace?.lat === space.lat)}
+              icon={createTreeIcon(space, selectedSpace?.AD === space.AD && selectedSpace?.lat === space.lat)}
               ref={(ref) => {
                 markerRefs.current[`${space.AD}-${space.lat}-${space.lng}`] = ref;
               }}
@@ -413,7 +455,7 @@ export default function MapPage({ theme, allSpacesExternal, initialSelectedSpace
                     />
                   )}
 
-                  <h3 className="font-display font-bold text-lg mb-2 text-gray-900 dark:text-white leading-tight">
+                  <h3 className="font-display font-bold text-lg mb-2 text-[#2f7d46] dark:text-green-400 leading-tight">
                     {space.AD}
                   </h3>
                   

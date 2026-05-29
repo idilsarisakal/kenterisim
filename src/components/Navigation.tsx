@@ -24,9 +24,14 @@ export default function Navigation({ currentPath, onNavigate, theme, onToggleThe
           <div className="p-2 bg-green-100 dark:bg-dark-green-800 rounded-lg group-hover:bg-green-200 dark:group-hover:bg-dark-green-700 transition-colors">
             <Trees className="w-6 h-6 text-green-700 dark:text-primary transition-colors" />
           </div>
-          <span className="font-display text-xl font-bold text-gray-900 dark:text-white tracking-tight transition-colors">
-            İstanbul Yeşil Rehber
-          </span>
+          <div className="flex flex-col">
+            <span className="font-display text-xl font-bold text-gray-900 dark:text-white tracking-tight transition-colors leading-tight">
+              KentErişim
+            </span>
+            <span className="text-[10px] text-gray-400 dark:text-gray-500 transition-colors">
+              Erişilebilir kent rehberi platformu
+            </span>
+          </div>
         </div>
         
         <div className="flex items-center gap-4">

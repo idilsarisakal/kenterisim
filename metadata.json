@@ -1,6 +1,8 @@
 {
-  "name": "İstanbul Yeşil Alan Haritası",
-  "description": "İstanbul'un parklarını, bostanlarını ve korularını keşfetmek için modern ve interaktif bir rehber.",
+  "name": "KentErişim",
+  "description": "Engelli bireyler için erişilebilir kamusal alanları, hizmet noktalarını ve şehir verilerini tek platformda keşfetmenizi sağlayan bütüncül bir erişilebilir kent rehberi.",
   "requestFramePermissions": [],
-  "majorCapabilities": []
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }
