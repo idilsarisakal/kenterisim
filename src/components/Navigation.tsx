@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { Trees, Sun, Moon } from 'lucide-react';
+import { Sun, Moon } from 'lucide-react';
 import { motion } from 'motion/react';
+import KentErisimLogo from './KentErisimLogo';
 
 interface NavigationProps {
   currentPath: 'landing' | 'map';
@@ -21,8 +22,8 @@ export default function Navigation({ currentPath, onNavigate, theme, onToggleThe
           className="flex items-center gap-2 cursor-pointer group"
           onClick={() => onNavigate('landing')}
         >
-          <div className="p-2 bg-green-100 dark:bg-dark-green-800 rounded-lg group-hover:bg-green-200 dark:group-hover:bg-dark-green-700 transition-colors">
-            <Trees className="w-6 h-6 text-green-700 dark:text-primary transition-colors" />
+          <div className="p-2 bg-blue-50 dark:bg-slate-800 rounded-lg group-hover:bg-blue-100 dark:group-hover:bg-slate-700 transition-colors">
+            <KentErisimLogo size={24} className="text-blue-600 dark:text-primary" />
           </div>
           <div className="flex flex-col">
             <span className="font-display text-xl font-bold text-gray-900 dark:text-white tracking-tight transition-colors leading-tight">

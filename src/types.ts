@@ -14,6 +14,8 @@ export interface GreenSpace {
   lng: number;
   GÖRSEL_URL?: string;
   CALISMA_SAATLERI?: string;
+  multimedya?: string;
+  MULTIMEDYA?: string;
 }
 
 export interface CSVRow {
@@ -26,4 +28,6 @@ export interface CSVRow {
   KOORDİNATLARI: string;
   GÖRSEL_URL?: string;
   CALISMA_SAATLERI?: string;
+  multimedya?: string;
+  MULTIMEDYA?: string;
 }

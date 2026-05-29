@@ -2,10 +2,11 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Tooltip, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { Trees, Accessibility, MapPin, AlertCircle, Loader2, Search, Filter, Navigation as LucideNavigation, X, Info, ExternalLink, Clock, Zap } from 'lucide-react';
+import { Trees, Accessibility, MapPin, AlertCircle, Loader2, Search, Filter, Navigation as LucideNavigation, X, Info, ExternalLink, Clock, Zap, Building } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { GreenSpace } from '../types';
 import { fetchGreenSpaces } from '../services/dataService';
+import KentErisimLogo from './KentErisimLogo';
 
 // Custom Marker Configuration
 const createTreeIcon = (space: GreenSpace, isHighlighted: boolean = false) => {
@@ -18,6 +19,10 @@ const createTreeIcon = (space: GreenSpace, isHighlighted: boolean = false) => {
     turLower.includes('sarj') ||
     space["TÜR"] === 'Akülü Sandalye Şarj İstasyonu';
   
+  const isSocialFacility = 
+    turLower.includes('sosyal') || 
+    turLower.includes('tesis');
+
   const isServicePoint = 
     turLower.includes('tesis') || 
     turLower.includes('hizmet') || 
@@ -33,17 +38,21 @@ const createTreeIcon = (space: GreenSpace, isHighlighted: boolean = false) => {
     ? 'bg-orange-500 scale-125 ring-4 ring-orange-200' 
     : isChargingStation
       ? 'bg-[#eab308]'
-      : isServicePoint
-        ? 'bg-[#0d9488]'
-        : isAccessible 
-          ? 'bg-[#2f7d46]' 
-          : 'bg-[#ef4444]';
+      : isSocialFacility
+        ? 'bg-pink-600'
+        : isServicePoint
+          ? 'bg-[#0d9488]'
+          : isAccessible 
+            ? 'bg-[#2f7d46]' 
+            : 'bg-[#ef4444]';
 
   return L.divIcon({
     html: renderToStaticMarkup(
       <div className={`p-1 ${colorClass} rounded-full border-2 border-white shadow-md text-white transition-all duration-300 flex items-center justify-center`}>
         {isChargingStation ? (
           <Zap className="w-5 h-5 fill-white text-white" />
+        ) : isSocialFacility ? (
+          <Building className="w-5 h-5 text-white" />
         ) : isServicePoint ? (
           <Info className="w-5 h-5 text-white" />
         ) : (
@@ -250,7 +259,10 @@ export default function MapPage({ theme, allSpacesExternal, initialSelectedSpace
       {/* Sidebar - Controls */}
       <div className="w-full md:w-96 bg-white dark:bg-dark-green-900 border-r border-gray-100 dark:border-dark-green-800 p-6 flex flex-col z-10 shadow-lg transition-all duration-300">
         <div className="mb-6">
-          <h2 className="font-display text-3xl font-bold text-gray-900 dark:text-white mb-2 transition-colors">KentErişim</h2>
+          <div className="flex items-center gap-2 mb-2">
+            <KentErisimLogo size={32} className="text-blue-600 dark:text-primary" />
+            <h2 className="font-display text-3xl font-bold text-gray-900 dark:text-white transition-colors">KentErişim</h2>
+          </div>
           <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed mb-6 transition-colors">
             Kent genelindeki engelsiz kamusal alanları, şarj istasyonlarını ve hizmet noktalarını keşfedin, filtreleyin.
           </p>
@@ -428,104 +440,127 @@ export default function MapPage({ theme, allSpacesExternal, initialSelectedSpace
             </Marker>
           )}
           
-          {filteredSpaces.map((space, idx) => (
-            <Marker 
-              key={`${space.AD}-${idx}`} 
-              position={[space.lat, space.lng]} 
-              icon={createTreeIcon(space, selectedSpace?.AD === space.AD && selectedSpace?.lat === space.lat)}
-              ref={(ref) => {
-                markerRefs.current[`${space.AD}-${space.lat}-${space.lng}`] = ref;
-              }}
-            >
-              <Tooltip direction="top" offset={[0, -20]} opacity={1}>
-                <div className="p-1">
-                  <p className="font-bold text-gray-900 dark:text-white">{space.AD}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold">{space.ILCE}</p>
-                </div>
-              </Tooltip>
-              
-              <Popup className="custom-popup">
-                <div className="p-1 w-64">
-                  {space.GÖRSEL_URL && (
-                    <img 
-                      src={space.GÖRSEL_URL} 
-                      alt={space.AD}
-                      className="w-full h-[140px] object-cover rounded-xl mb-3 shadow-sm"
-                      onError={(e) => (e.currentTarget.style.display = 'none')}
-                    />
-                  )}
+          {filteredSpaces.map((space, idx) => {
+            const turLower = (space["TÜR"] || '').toLowerCase();
+            const isChargingStation = 
+              turLower.includes('şarj') || 
+              turLower.includes('sarj') || 
+              turLower.includes('akülü') || 
+              turLower.includes('akulu') || 
+              space["TÜR"] === 'Akülü Sandalye Şarj İstasyonu';
 
-                  <h3 className="font-display font-bold text-lg mb-2 text-[#2f7d46] dark:text-green-400 leading-tight">
-                    {space.AD}
-                  </h3>
-                  
-                  <div className="space-y-3">
-                    {space["TÜR"] && (
-                      <div className="inline-block px-2 py-1 bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 text-[10px] font-bold uppercase rounded-md mb-2">
-                        {space["TÜR"]}
+            const isSocialFacility = 
+              turLower.includes('sosyal') || 
+              turLower.includes('tesis');
+
+            return (
+              <Marker 
+                key={`${space.AD}-${idx}`} 
+                position={[space.lat, space.lng]} 
+                icon={createTreeIcon(space, selectedSpace?.AD === space.AD && selectedSpace?.lat === space.lat)}
+                ref={(ref) => {
+                  markerRefs.current[`${space.AD}-${space.lat}-${space.lng}`] = ref;
+                }}
+              >
+                <Tooltip direction="top" offset={[0, -20]} opacity={1}>
+                  <div className="p-1">
+                    <p className="font-bold text-gray-900 dark:text-white">{space.AD}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold">{space.ILCE}</p>
+                  </div>
+                </Tooltip>
+                
+                <Popup className="custom-popup">
+                  <div className="p-1 w-64">
+                    <h3 className={`font-display font-bold text-lg mb-2 leading-tight ${isChargingStation ? 'text-[#eab308] dark:text-yellow-400' : isSocialFacility ? 'text-pink-600 dark:text-pink-400' : 'text-[#2f7d46] dark:text-green-400'}`}>
+                      {space.AD}
+                    </h3>
+
+                    {(space.MULTIMEDYA || space.multimedya || space.GÖRSEL_URL) && (
+                      <div className="popup-image-container w-full aspect-[16/9] rounded-[14px] overflow-hidden my-3 bg-[#eef3ee] dark:bg-dark-green-800/40">
+                        <img 
+                          src={space.MULTIMEDYA || space.multimedya || space.GÖRSEL_URL} 
+                          alt={space.AD || "Konum görseli"}
+                          className="popup-image w-full h-full block object-cover"
+                          loading="lazy"
+                          onError={(e) => {
+                            if (e.currentTarget.parentElement) {
+                              e.currentTarget.parentElement.style.display = 'none';
+                            }
+                          }}
+                        />
                       </div>
                     )}
+                    
+                    <div className="space-y-3">
+                      {space["TÜR"] && (
+                        <div className={`inline-block px-2 py-1 text-[10px] font-bold uppercase rounded-md mb-2 ${isChargingStation ? 'bg-yellow-100 dark:bg-yellow-950/50 text-yellow-800 dark:text-yellow-300' : isSocialFacility ? 'bg-pink-100 dark:bg-pink-950/50 text-pink-800 dark:text-pink-300' : 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300'}`}>
+                          {space["TÜR"]}
+                        </div>
+                      )}
 
-                    <div className="flex items-start gap-2">
-                      <MapPin className="w-4 h-4 text-green-600 dark:text-green-400 mt-1 flex-shrink-0" />
-                      <div>
-                        <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase">ADRES</p>
-                        <p className="text-sm text-gray-700 dark:text-gray-300">{space.ADRES || 'Adres bilgisi bulunamadı.'}</p>
+                      <div className="flex items-start gap-2">
+                        <MapPin className={`w-4 h-4 mt-1 flex-shrink-0 ${isChargingStation ? 'text-[#eab308] dark:text-yellow-400' : isSocialFacility ? 'text-pink-500 dark:text-pink-400' : 'text-green-600 dark:text-green-400'}`} />
+                        <div>
+                          <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase">ADRES</p>
+                          <p className="text-sm text-gray-700 dark:text-gray-300">{space.ADRES || 'Adres bilgisi bulunamadı.'}</p>
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="flex items-start gap-2 pt-2 border-t border-gray-100 dark:border-dark-green-800">
-                      <Clock className="w-4 h-4 text-green-600 dark:text-green-400 mt-1 flex-shrink-0" />
-                      <div>
-                        <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase transition-colors">ÇALIŞMA SAATLERİ</p>
-                        <p className="text-sm text-gray-700 dark:text-gray-300 transition-colors">
-                          {space.CALISMA_SAATLERI ? `Çalışma Saatleri: ${space.CALISMA_SAATLERI}` : 'Çalışma saatleri bilgisi bulunmuyor'}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 pt-2 border-t border-gray-100 dark:border-dark-green-800">
-                      {(() => {
-                        const status = space["TEKERLEKLİ SANDALYE UYGUNLUK DURUMU"]?.toUpperCase();
-                        let text = "Bilinmiyor";
-                        let color = "text-gray-500";
-                        let iconColorClass = "text-gray-400";
-
-                        if (status === "UYGUN") {
-                          text = "Uygun";
-                          color = "text-green-600";
-                          iconColorClass = "text-green-600";
-                        } else if (status === "DEĞİL") {
-                          text = "Uygun Değil";
-                          color = "text-red-600";
-                          iconColorClass = "text-red-600";
-                        }
-
-                        return (
-                          <>
-                            <Accessibility className={`w-4 h-4 ${iconColorClass}`} />
-                            <p className={`text-sm font-semibold ${color}`}>
-                              {text}
+                      {!isChargingStation && (
+                        <div className="flex items-start gap-2 pt-2 border-t border-gray-100 dark:border-dark-green-800">
+                          <Clock className={`w-4 h-4 mt-1 flex-shrink-0 ${isSocialFacility ? 'text-pink-500 dark:text-pink-400' : 'text-green-600 dark:text-green-400'}`} />
+                          <div>
+                            <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase transition-colors">ÇALIŞMA SAATLERİ</p>
+                            <p className="text-sm text-gray-700 dark:text-gray-300 transition-colors">
+                              {space.CALISMA_SAATLERI ? `Çalışma Saatleri: ${space.CALISMA_SAATLERI}` : 'Çalışma saatleri bilgisi bulunmuyor'}
                             </p>
-                          </>
-                        );
-                      })()}
-                    </div>
+                          </div>
+                        </div>
+                      )}
 
-                    <a
-                      href={`https://www.google.com/maps/dir/?api=1&destination=${space.lat},${space.lng}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-4 flex items-center justify-center gap-2 w-full py-2.5 bg-primary dark:bg-emerald-500 hover:opacity-90 text-white rounded-xl text-xs font-bold transition-all shadow-sm no-underline"
-                    >
-                      <ExternalLink className="w-3.5 h-3.5" />
-                      Google Haritalar'da Yol Tarifi Al
-                    </a>
+                      <div className="flex items-center gap-2 pt-2 border-t border-gray-100 dark:border-dark-green-800">
+                        {(() => {
+                          const status = space["TEKERLEKLİ SANDALYE UYGUNLUK DURUMU"]?.toUpperCase();
+                          let text = "Bilinmiyor";
+                          let color = "text-gray-500";
+                          let iconColorClass = "text-gray-400";
+
+                          if (status === "UYGUN") {
+                            text = "Uygun";
+                            color = isSocialFacility ? "text-pink-600 dark:text-pink-400" : "text-green-600";
+                            iconColorClass = isSocialFacility ? "text-pink-500 dark:text-pink-400" : "text-green-600";
+                          } else if (status === "DEĞİL") {
+                            text = "Uygun Değil";
+                            color = "text-red-600";
+                            iconColorClass = "text-red-600";
+                          }
+
+                          return (
+                            <>
+                              <Accessibility className={`w-4 h-4 ${iconColorClass}`} />
+                              <p className={`text-sm font-semibold ${color}`}>
+                                {text}
+                              </p>
+                            </>
+                          );
+                        })()}
+                      </div>
+
+                      <a
+                        href={`https://www.google.com/maps/dir/?api=1&destination=${space.lat},${space.lng}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`mt-4 flex items-center justify-center gap-2 w-full py-2.5 hover:opacity-90 text-white rounded-xl text-xs font-bold transition-all shadow-sm no-underline ${isChargingStation ? 'bg-[#eab308] hover:bg-[#ca8a04]' : isSocialFacility ? 'bg-pink-600 hover:bg-pink-700' : 'bg-primary dark:bg-emerald-500'}`}
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        Google Haritalar'da Yol Tarifi Al
+                      </a>
+                    </div>
                   </div>
-                </div>
-              </Popup>
-            </Marker>
-          ))}
+                </Popup>
+              </Marker>
+            );
+          })}
         </MapContainer>
       </div>
     </div>

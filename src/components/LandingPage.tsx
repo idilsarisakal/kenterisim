@@ -42,6 +42,7 @@ export default function LandingPage({ onStart, allSpaces, onSelectSpace, loading
   const [current, setCurrent] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [imageErrors, setImageErrors] = useState<Record<number, boolean>>({});
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -102,14 +103,20 @@ export default function LandingPage({ onStart, allSpaces, onSelectSpace, loading
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 1.5 }}
-            className="absolute inset-0 z-0"
+            className="absolute inset-0 z-0 bg-gradient-to-br from-[#1e3a8a] to-[#2563eb]"
+            style={{ backgroundImage: 'linear-gradient(135deg, #1e3a8a, #2563eb)' }}
           >
-            <img
-              src={HERO_IMAGES[current].url}
-              alt={HERO_IMAGES[current].title}
-              className="w-full h-full object-cover brightness-[0.55] dark:brightness-[0.45]"
-              referrerPolicy="no-referrer"
-            />
+            {!imageErrors[current] && (
+              <img
+                src={HERO_IMAGES[current].url}
+                alt=""
+                onError={() => {
+                  setImageErrors(prev => ({ ...prev, [current]: true }));
+                }}
+                className="w-full h-full object-cover brightness-[0.55] dark:brightness-[0.45]"
+                referrerPolicy="no-referrer"
+              />
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-dark-green-950 via-black/20 dark:via-black/30 to-transparent" />
           </motion.div>
         </AnimatePresence>
@@ -374,10 +381,10 @@ export default function LandingPage({ onStart, allSpaces, onSelectSpace, loading
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="bg-gray-50 dark:bg-dark-green-900/50 p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-dark-green-800 hover:shadow-md dark:hover:shadow-green-900/20 transition-all"
+              className="bg-gray-50 dark:bg-dark-green-900/50 p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-dark-green-800 hover:shadow-md dark:hover:shadow-blue-950/20 transition-all"
             >
-              <div className="w-12 h-12 bg-green-100 dark:bg-dark-green-800 rounded-2xl flex items-center justify-center mb-6 transition-colors">
-                <MapPin className="w-6 h-6 text-green-700 dark:text-primary" />
+              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-950/50 rounded-2xl flex items-center justify-center mb-6 transition-colors">
+                <MapPin className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
               <h3 className="font-display text-2xl font-bold mb-4 dark:text-white transition-colors">Bütünsel Erişim</h3>
               <p className="text-gray-600 dark:text-gray-400 leading-relaxed transition-colors">
@@ -390,10 +397,10 @@ export default function LandingPage({ onStart, allSpaces, onSelectSpace, loading
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.2 }}
-              className="bg-gray-50 dark:bg-dark-green-900/50 p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-dark-green-800 hover:shadow-md dark:hover:shadow-green-900/20 transition-all"
+              className="bg-gray-50 dark:bg-dark-green-900/50 p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-dark-green-800 hover:shadow-md dark:hover:shadow-blue-950/20 transition-all"
             >
-              <div className="w-12 h-12 bg-green-100 dark:bg-dark-green-800 rounded-2xl flex items-center justify-center mb-6 transition-colors">
-                <Leaf className="w-6 h-6 text-green-700 dark:text-primary" />
+              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-950/50 rounded-2xl flex items-center justify-center mb-6 transition-colors">
+                <Leaf className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
               <h3 className="font-display text-2xl font-bold mb-4 dark:text-white transition-colors">Engelsiz Ulaşım</h3>
               <p className="text-gray-600 dark:text-gray-400 leading-relaxed transition-colors">
@@ -406,14 +413,79 @@ export default function LandingPage({ onStart, allSpaces, onSelectSpace, loading
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.4 }}
-              className="bg-gray-50 dark:bg-dark-green-900/50 p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-dark-green-800 hover:shadow-md dark:hover:shadow-green-900/20 transition-all"
+              className="bg-gray-50 dark:bg-dark-green-900/50 p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-dark-green-800 hover:shadow-md dark:hover:shadow-blue-950/20 transition-all"
             >
-              <div className="w-12 h-12 bg-green-100 dark:bg-dark-green-800 rounded-2xl flex items-center justify-center mb-6 transition-colors">
-                <Users className="w-6 h-6 text-green-700 dark:text-primary" />
+              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-950/50 rounded-2xl flex items-center justify-center mb-6 transition-colors">
+                <Users className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
               <h3 className="font-display text-2xl font-bold mb-4 dark:text-white transition-colors">Açık Veri & Şeffaflık</h3>
               <p className="text-gray-600 dark:text-gray-400 leading-relaxed transition-colors">
                 Belediyeler ve sivil toplum kuruluşlarıyla iş birliği içinde, toplumsal kapsayıcılığı artırmaya odaklanan toplumsal ve kentsel veri sunumu.
+              </p>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Neden Erişilebilir Şehirler? Section */}
+      <section className="py-20 bg-blue-50/30 dark:bg-dark-green-900/10 border-t border-gray-100 dark:border-dark-green-800 transition-colors duration-300">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="font-display text-4xl font-bold text-gray-900 dark:text-white mb-4 transition-colors">Neden Erişilebilir Şehirler?</h2>
+            <div className="w-20 h-1 bg-primary mx-auto mb-6" />
+            <p className="max-w-3xl mx-auto text-gray-600 dark:text-gray-300 leading-relaxed text-base transition-colors">
+              Erişilebilir şehirler yalnızca engelli bireyler için değil; yaşlılar, çocuklar, bebek arabası kullanan aileler ve geçici hareket kısıtlılığı yaşayan herkes için daha güvenli ve yaşanabilir kentler oluşturur. Bir şehrin gerçek anlamda kapsayıcı olabilmesi, tüm bireylerin kamusal alanlara, hizmetlere ve sosyal yaşama bağımsız şekilde erişebilmesiyle mümkündür.
+            </p>
+            <p className="max-w-3xl mx-auto text-gray-600 dark:text-gray-300 leading-relaxed text-base mt-4 transition-colors">
+              KentErişim, erişilebilirlik verilerini tek bir platformda bir araya getirerek şehirleri herkes için daha ulaşılabilir hale getirmeyi amaçlamaktadır.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 mt-12">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="bg-white dark:bg-dark-green-900 p-6 rounded-3xl border border-gray-100 dark:border-dark-green-800 shadow-sm hover:shadow-md/5 transition-all text-center flex flex-col items-center"
+            >
+              <div className="w-12 h-12 bg-blue-50 dark:bg-blue-950/40 rounded-2xl flex items-center justify-center mb-4 text-blue-600 dark:text-blue-400">
+                <Accessibility className="w-6 h-6" />
+              </div>
+              <h3 className="font-display text-lg font-bold mb-2 dark:text-white">Bağımsız Hareket</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Kamusal alanlara engelsiz erişim.
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="bg-white dark:bg-dark-green-900 p-6 rounded-3xl border border-gray-100 dark:border-dark-green-800 shadow-sm hover:shadow-md/5 transition-all text-center flex flex-col items-center"
+            >
+              <div className="w-12 h-12 bg-blue-50 dark:bg-blue-950/40 rounded-2xl flex items-center justify-center mb-4 text-blue-600 dark:text-blue-400">
+                <Users className="w-6 h-6" />
+              </div>
+              <h3 className="font-display text-lg font-bold mb-2 dark:text-white">Toplumsal Katılım</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Herkes için eşit şehir yaşamı.
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+              className="bg-white dark:bg-dark-green-900 p-6 rounded-3xl border border-gray-100 dark:border-dark-green-800 shadow-sm hover:shadow-md/5 transition-all text-center flex flex-col items-center"
+            >
+              <div className="w-12 h-12 bg-blue-50 dark:bg-blue-950/40 rounded-2xl flex items-center justify-center mb-4 text-blue-600 dark:text-blue-400">
+                <Info className="w-6 h-6" />
+              </div>
+              <h3 className="font-display text-lg font-bold mb-2 dark:text-white">Kapsayıcı Tasarım</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Tüm bireyleri gözeten kent planlaması.
               </p>
             </motion.div>
           </div>

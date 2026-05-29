@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 import Navigation from './components/Navigation';
 import LandingPage from './components/LandingPage';
 import MapPage from './components/MapPage';
+import AccessibilityPanel from './components/AccessibilityPanel';
 import { motion, AnimatePresence } from 'motion/react';
 import { GreenSpace } from './types';
 import { fetchGreenSpaces } from './services/dataService';
@@ -102,6 +103,7 @@ export default function App() {
           )}
         </AnimatePresence>
       </main>
+      <AccessibilityPanel />
     </div>
   );
 }

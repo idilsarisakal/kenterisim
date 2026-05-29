@@ -6,13 +6,14 @@
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Playfair Display", serif;
   
-  --color-primary: #10b981; /* Default emerald-500 */
-  --color-primary-dark: #059669; /* Emerald-600 */
+  --color-primary: #2563EB;
+  --color-primary-dark: #1d4ed8;
   
-  --color-dark-green-950: #051405;
-  --color-dark-green-900: #0a240a;
-  --color-dark-green-800: #123d12;
-  --color-dark-green-700: #1a561a;
+  /* Modern civic-tech slate colors overriding dark green namespaces */
+  --color-dark-green-950: #0F172A;
+  --color-dark-green-900: #1E293B;
+  --color-dark-green-800: #334155;
+  --color-dark-green-700: #475569;
 }
 
 @layer base {
@@ -25,11 +26,11 @@
 @variant dark (&:where(.dark, .dark *));
 
 body {
-  @apply transition-colors duration-300;
+  @apply bg-[#F8FAFC] text-[#0F172A] transition-colors duration-300;
 }
 
 .dark body {
-  @apply bg-dark-green-950 text-white antialiased;
+  @apply bg-[#0F172A] text-[#F8FAFC] antialiased;
 }
 
 /* Custom Marker Styling for Tree Icon */
@@ -48,11 +49,143 @@ body {
 /* Dark Map Popup Styling */
 .dark .leaflet-popup-content-wrapper,
 .dark .leaflet-popup-tip {
-  background: #0a240a !important;
-  color: white !important;
+  background: #1E293B !important;
+  color: #F8FAFC !important;
 }
 
 .dark .leaflet-popup-content-wrapper {
-  border: 1px solid #1a561a;
+  border: 1px solid #334155;
+}
+
+/* --- Erişilebilirlik (Accessibility) Paneli Özelleştirme Sınıfları --- */
+
+/* 1. Metin Boyutu Artır / Azalt (L ve XL boyutları) */
+body.as-text-lg p,
+body.as-text-lg span,
+body.as-text-lg a,
+body.as-text-lg button,
+body.as-text-lg li,
+body.as-text-lg h3,
+body.as-text-lg h4,
+body.as-text-lg input,
+body.as-text-lg label,
+body.as-text-lg select,
+body.as-text-lg textarea {
+  font-size: 1.125rem !important; /* ~18px */
+  line-height: 1.6 !important;
+}
+body.as-text-lg h1 {
+  font-size: 2.5rem !important;
+}
+body.as-text-lg h2 {
+  font-size: 2rem !important;
+}
+
+body.as-text-xl p,
+body.as-text-xl span,
+body.as-text-xl a,
+body.as-text-xl button,
+body.as-text-xl li,
+body.as-text-xl h3,
+body.as-text-xl h4,
+body.as-text-xl input,
+body.as-text-xl label,
+body.as-text-xl select,
+body.as-text-xl textarea {
+  font-size: 1.25rem !important; /* ~20px */
+  line-height: 1.7 !important;
+}
+body.as-text-xl h1 {
+  font-size: 3rem !important;
+}
+body.as-text-xl h2 {
+  font-size: 2.5rem !important;
+}
+
+/* 2. Kontrast Modu (Yüksek Kontrast) - filter-based & element contrast enhancement */
+body.as-high-contrast {
+  filter: contrast(1.75) !important;
+}
+body.as-high-contrast p,
+body.as-high-contrast span,
+body.as-high-contrast h1,
+body.as-high-contrast h2,
+body.as-high-contrast h3,
+body.as-high-contrast h4,
+body.as-high-contrast li {
+  font-weight: 700 !important;
+}
+body.as-high-contrast input,
+body.as-high-contrast select,
+body.as-high-contrast textarea,
+body.as-high-contrast button {
+  border: 2px solid currentColor !important;
+}
+
+/* 3. Doygunluğu Azalt (Grayscale/Monochrome) */
+body.as-reduce-saturation {
+  filter: grayscale(1) !important;
+}
+body.as-high-contrast.as-reduce-saturation {
+  filter: contrast(1.75) grayscale(1) !important;
+}
+
+/* 4. Animasyonları Durdur */
+body.as-pause-animations,
+body.as-pause-animations * {
+  animation-delay: 0s !important;
+  animation-duration: 0s !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0s !important;
+  scroll-behavior: auto !important;
+  transform: none !important;
+}
+
+/* 5. Resimleri Gizle (Resimleri tamamen gizler ve sayfa karmaşasını önler) */
+body.as-hide-images img,
+body.as-hide-images picture,
+body.as-hide-images .popup-image-container,
+body.as-hide-images .image-carousel,
+body.as-hide-images [style*="background-image"] {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* 6. Bağlantıları Vurgula */
+body.as-highlight-links a:not(#accessibility-trigger-btn) {
+  outline: 3px solid #2563eb !important;
+  background-color: #fef08a !important; /* Açık sarı arka plan */
+  color: #1e3a8a !important; /* Lacivert yazı */
+  text-decoration: underline !important;
+  font-weight: 800 !important;
+}
+.dark body.as-highlight-links a:not(#accessibility-trigger-btn) {
+  outline: 3px solid #60a5fa !important;
+  background-color: #1e3a8a !important; /* Koyu mavi arka plan */
+  color: #fef08a !important; /* Parlak sarı */
+}
+
+/* 7. İmleci Büyüt (Yüksek görünürlüklü mavi & beyaz konturlu özel cursor SVG'si) */
+body.as-large-cursor,
+body.as-large-cursor * {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 32 32'%3E%3Cpath d='M0,0 L20,10 L12,12 L10,20 Z' fill='%232563eb' stroke='%23ffffff' stroke-width='2'/%3E%3C/svg%3E"), auto !important;
+}
+
+/* 8. Satır Yüksekliğini Artır */
+body.as-increase-line-height p,
+body.as-increase-line-height span,
+body.as-increase-line-height li,
+body.as-increase-line-height select,
+body.as-increase-line-height textarea,
+body.as-increase-line-height h1,
+body.as-increase-line-height h2,
+body.as-increase-line-height h3,
+body.as-increase-line-height h4 {
+  line-height: 1.85 !important;
 }
 
