@@ -255,9 +255,114 @@ export default function MapPage({ theme, allSpacesExternal, initialSelectedSpace
   }
 
   return (
-    <div className="h-screen w-full pt-16 flex flex-col md:flex-row overflow-hidden bg-gray-50 dark:bg-dark-green-950 transition-colors duration-300">
-      {/* Sidebar - Controls */}
-      <div className="w-full md:w-96 bg-white dark:bg-dark-green-900 border-r border-gray-100 dark:border-dark-green-800 p-6 flex flex-col z-10 shadow-lg transition-all duration-300">
+    <div className="h-[calc(100vh-4rem)] md:h-screen w-full pt-16 flex flex-col md:flex-row overflow-hidden bg-gray-50 dark:bg-dark-green-950 transition-colors duration-300">
+      
+      {/* MOBILE HEADER & FILTER ROW (Visible only on mobile size: < md) */}
+      <div className="flex md:hidden flex-col bg-white dark:bg-dark-green-900 border-b border-gray-100 dark:border-dark-green-800 p-3.5 gap-2.5 z-20 shadow-sm relative shrink-0">
+        {/* Search Bar Row */}
+        <div className="relative">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Erişilebilir alan, hizmet veya konum ara..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setShowSearchSuggestions(true);
+              }}
+              className="w-full pl-10 pr-10 py-2.5 bg-gray-100 dark:bg-dark-green-800 border-none rounded-2xl text-sm focus:ring-2 focus:ring-primary transition-all text-gray-900 dark:text-white dark:placeholder-gray-500"
+            />
+            {searchTerm && (
+              <button 
+                onClick={() => {setSearchTerm(''); setSelectedSpace(null);}}
+                className="absolute right-3 top-1/2 -translate-y-1/2"
+              >
+                <X className="w-4 h-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" />
+              </button>
+            )}
+          </div>
+          
+          {/* Mobile Search Suggestions */}
+          <AnimatePresence>
+            {showSearchSuggestions && searchSuggestions.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-dark-green-800 rounded-2xl shadow-xl border border-gray-100 dark:border-dark-green-700 z-50 overflow-hidden transition-all duration-300 max-h-60 overflow-y-auto"
+              >
+                {searchSuggestions.map((space, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleSelectSpace(space)}
+                    className="w-full px-4 py-3 text-left hover:bg-green-50 dark:hover:bg-dark-green-700 transition-colors flex items-start gap-3 border-b last:border-none border-gray-100 dark:border-dark-green-700"
+                  >
+                    <MapPin className="w-4 h-4 text-primary mt-0.5" />
+                    <div>
+                      <p className="text-sm font-bold text-gray-900 dark:text-white transition-colors">{space.AD}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate w-64 transition-colors">{space.ADRES}</p>
+                    </div>
+                  </button>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {searchTerm && filteredSpaces.length === 0 && (
+            <div className="absolute top-full left-0 right-0 mt-2 p-3 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-xs rounded-xl flex items-center gap-2 z-50 shadow-md">
+              <AlertCircle className="w-4 h-4" />
+              Eşleşen hizmet veya alan bulunamadı.
+            </div>
+          )}
+        </div>
+
+        {/* Filters Row - Horizontally Scrollable */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 select-none scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none]">
+          {/* Geolocation Locator */}
+          <button
+            onClick={handleLocateUser}
+            disabled={locating}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${
+              userLocation ? 'bg-blue-600 text-white' : 'bg-gray-900 dark:bg-primary text-white hover:bg-black'
+            } disabled:opacity-50 flex-shrink-0`}
+          >
+            {locating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <LucideNavigation className="w-3.5 h-3.5" />}
+            {locating ? "Bulunuyor..." : "Etrafımda"}
+          </button>
+
+          {/* Accessibility Toggle */}
+          <button
+            onClick={() => setSelectedAccessibility(selectedAccessibility === 'Tümü' ? 'Uygun' : 'Tümü')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold flex-shrink-0 transition-all ${
+              selectedAccessibility === 'Uygun'
+                ? 'bg-[#2563EB] text-white shadow-sm'
+                : 'bg-gray-100 dark:bg-dark-green-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-green-700'
+            }`}
+          >
+            <Accessibility className="w-3.5 h-3.5" />
+            Engelsiz
+          </button>
+
+          {/* Categories */}
+          {turOptions.map((tur) => (
+            <button
+              key={tur}
+              onClick={() => setSelectedTur(tur)}
+              className={`px-3 py-1.5 rounded-full text-xs font-bold flex-shrink-0 transition-all ${
+                selectedTur === tur
+                  ? 'bg-[#2563EB] text-white shadow-sm'
+                  : 'bg-gray-100 dark:bg-dark-green-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-green-700'
+              }`}
+            >
+              {getCategoryLabel(tur)}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* DESKTOP SIDEBAR - CONTROLS (Hidden on mobile size, visible on desktop: md:flex) */}
+      <div className="hidden md:flex w-full md:w-96 bg-white dark:bg-dark-green-900 border-r border-gray-100 dark:border-dark-green-800 p-6 flex-col z-10 shadow-lg transition-all duration-300 shrink-0">
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-2">
             <KentErisimLogo size={32} className="text-blue-600 dark:text-primary" />
