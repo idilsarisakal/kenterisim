@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Tooltip, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { Trees, Accessibility, MapPin, AlertCircle, Loader2, Search, Filter, Navigation as LucideNavigation, X, Info, ExternalLink, Clock, Zap, Building } from 'lucide-react';
+import { Trees, Accessibility, MapPin, AlertCircle, Loader2, Search, Filter, Navigation as LucideNavigation, X, Info, ExternalLink, Clock, Zap, Building, Compass, Target } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { GreenSpace } from '../types';
 import { fetchGreenSpaces } from '../services/dataService';
@@ -114,6 +114,55 @@ function MapController({ center, selectedSpace, userLocation }: MapControllerPro
   }, [userLocation, map]);
 
   return null;
+}
+
+function MobileMapControls({ userLocation, handleLocateUser, locating }: {
+  userLocation: [number, number] | null;
+  handleLocateUser: () => void;
+  locating: boolean;
+}) {
+  const map = useMap();
+
+  const handleCenterMap = () => {
+    map.setView([40.9926, 29.0341], 13, { animate: true });
+  };
+
+  const handleZoomToUser = () => {
+    if (userLocation) {
+      map.setView(userLocation, 16, { animate: true });
+    } else {
+      handleLocateUser();
+    }
+  };
+
+  return (
+    <div className="absolute bottom-24 right-4 z-[1000] flex flex-col gap-3 md:hidden">
+      {/* Zoom to user location button */}
+      <button
+        type="button"
+        onClick={handleZoomToUser}
+        disabled={locating}
+        className="w-12 h-12 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-100 rounded-full shadow-lg border border-slate-100 dark:border-slate-850 flex items-center justify-center hover:scale-105 active:scale-95 transition-all focus:outline-none"
+        title="Okuyucu / Konumuma Yakınlaş"
+      >
+        {locating ? (
+          <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
+        ) : (
+          <Compass className={`w-5.5 h-5.5 ${userLocation ? 'text-blue-600 animate-pulse' : 'text-slate-600 dark:text-slate-300'}`} />
+        )}
+      </button>
+
+      {/* Center map button */}
+      <button
+        type="button"
+        onClick={handleCenterMap}
+        className="w-12 h-12 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-100 rounded-full shadow-lg border border-slate-100 dark:border-slate-850 flex items-center justify-center hover:scale-105 active:scale-95 transition-all focus:outline-none"
+        title="Haritayı Merkezle"
+      >
+        <Target className="w-5.5 h-5.5 text-blue-600" />
+      </button>
+    </div>
+  );
 }
 
 interface MapPageProps {
@@ -538,6 +587,7 @@ export default function MapPage({ theme, allSpacesExternal, initialSelectedSpace
           />
           
           <MapController center={[40.9926, 29.0341]} selectedSpace={selectedSpace} userLocation={userLocation} />
+          <MobileMapControls userLocation={userLocation} handleLocateUser={handleLocateUser} locating={locating} />
 
           {userLocation && (
             <Marker position={userLocation} icon={userIcon}>
